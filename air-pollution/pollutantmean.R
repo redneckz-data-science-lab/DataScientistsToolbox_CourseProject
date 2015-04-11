@@ -1,3 +1,5 @@
+source("common.R")
+
 pollutantmean <- function(directory, pollutant, id = 1:332) {
     ## 'directory' is a character vector of length 1 indicating
     ## the location of the CSV files
@@ -12,18 +14,11 @@ pollutantmean <- function(directory, pollutant, id = 1:332) {
     ## Return the mean of the pollutant across all monitors list
     ## in the 'id' vector (ignoring NA values)
 
-    ## Computes pollutant mean in CSV file
-    pollutantmeanForFile <-  function(file) {
-        pollutantDataFrame <- read.csv(file.path(directory, file), colClasses = c("character", "numeric", "numeric", "numeric"))
-        pollutantColumnData <- pollutantDataFrame[pollutantDataFrame[["ID"]] %in% id, pollutant]
-        mean(pollutantColumnData, na.rm = T)
-    }
-
-    files <- list.files(directory)
-
-    ## Vector of means for each CSV file inside directory
-    means <- sapply(files, pollutantmeanForFile)
-
-    mean(means, na.rm = T)
+    ## Read and merge data from monitors
+    monitorsData <- Reduce(rbind, read.monitors.by.id(directory, id))
+    ## Pollutant data from monitors
+    pollutantData <- monitorsData[[pollutant]]
+    ## Pollutant mean
+    mean(pollutantData, na.rm = T)
 }
 
